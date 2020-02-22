@@ -1,0 +1,24 @@
+
+
+
+
+
+.lead{
+    padding :0px;
+    margin: 0px;
+    color: white;
+}
+
+img {
+    width: 425px ;
+    height: 325px ;
+    flex-grow: 2;
+    padding: 5px;
+    margin: 8px;
+  }
+
+
+.myclass{
+    padding-top: 50px;
+}
+

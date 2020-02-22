@@ -1,0 +1,179 @@
+const express = require('express');
+const app = express();
+const session = require('express-session')
+const hbs = require('hbs');
+const fs = require('fs')
+const path = require('path')
+const request = require('request')
+const gifSerivice = require('./services/gifService')
+const fileDownload = require('download-file')
+
+app.use(session({
+    secret:"myappsecret",
+    saveUninitialized:false,
+    resave:false,
+    cookie:{maxage:10000000000}
+}))
+
+app.set('views',__dirname+'/views');;
+app.set('view engine','hbs');
+app.use(express.json());
+app.use(express.urlencoded({extended:false}));
+app.use(express.static(__dirname+'/static'))
+
+
+// app.get('/',function (req,res) {
+//     if(req.session.isLoggedIn){
+//         res.render('home',{
+//             user:req.session.user
+//         })
+//     }
+// });
+
+app.get('/gif',function(req,res){
+        res.render('gifFind')    
+})
+
+app.post('/gif',function (req,res) {
+    let body = req.body;
+    console.log(body.search);
+    if(req.session.isLoggedIn){
+        req.session.searchinput = body
+        gifSerivice.doRequest(body,0)
+            .then(data => {
+                // console.log("the respolved data is ---->",data.data)
+                res.render('gifFind',{
+                    gif:data.data,
+                    err:false,
+                    btn:true
+                })
+            })
+            .catch(err => {
+                console.log(err)
+                res.render('gifFind',{
+                    err:true,
+                    data:err
+                })
+            })
+        }else{
+            res.redirect('/login')
+        }
+})
+
+
+app.get('/gif/image/:alias/:name',function (req,res) {
+    let alias = req.params.alias
+    let name = req.params.name
+    console.log("im coming to the individual gif page",alias)
+    res.render("displayImage",{
+        data:alias,
+        name:name
+    })
+})
+
+let counter = 0;
+let looper = 28;
+
+app.get('/gif/next',function (req,res) {
+    let body = req.session.searchinput
+    let count = (++counter)*looper
+    gifSerivice.doRequest(body,count)    
+    .then(data => {
+        // console.log("the respolved data is ---->",data)
+        res.render('gifFind',{
+            gif:data.data,
+            err:false,
+            btn:true
+        })
+    })
+    .catch(err => {
+        console.log(err)
+        res.render('gifFind',{
+            err:true,
+            data:err
+        })
+    })
+})
+
+app.get('/gif/download/:alias/:name',function (req,res) {
+    let alias = req.params.alias;
+    let name = req.params.name;
+    let url = `https://media3.giphy.com/media/${alias}/giphy.gif?&rid=giphy-downsized-small.mp4`
+    pathfl = path.join(__dirname,'./static/images')
+    let file = fs.createWriteStream(pathfl+'/'+name+'.gif');
+    
+    let str = request(url).pipe(file)
+    pathfile = pathfl+'/'+name+'.gif'
+    setTimeout(function () {
+        res.download(pathfile)    
+        file.end()
+    },15000)
+    
+})
+
+
+app.get('/gif/login',function (req,res) {
+    res.render('LoginPage')
+})
+
+
+app.post('/gif/login',function (req,res) {
+    let bodyData = req.body
+    let head = {
+        method:"POST",
+        uri:"http://localhost:3002/api/users/signin",
+        body:bodyData,
+        json:true
+    }
+    request(head,function (err,response,body) {
+        if(body.error){
+            res.render('LoginPage',{
+                err:true,
+                error:body.error
+            })
+        }else{
+            req.session.user = body.data;
+            req.session.isLoggedIn = true
+            console.log("session user...>",req.session.user)
+            res.render('gifFind',{
+                user:true,
+                userName:req.session.user,
+                loginned:true
+            })
+        }
+        
+        
+    })
+
+})
+
+
+app.get('/signup',function (req,res) {
+    res.render('SignupPage')
+})
+
+
+app.post('/signup',function(req,res){
+    let body = req.body;
+    console.log(body)
+    let head = {
+        method:"POST",
+        uri:"http://localhost:3002/api/users/signup",
+        body:body,
+        json:true
+    }
+    request(head,function (err,response,body) {
+        // if(err){
+        //     console.log(err)
+        // }else{
+        //     res.redirect('/login')
+        // }
+        console.log("error",err)
+        console.log("body -->",body)
+    })
+    
+})  
+
+
+
+app.listen(2406,() => {console.log("server is running dude on your birth date and month")})

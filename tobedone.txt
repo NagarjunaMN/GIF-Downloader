@@ -1,0 +1,7 @@
+
+
+
+
+and only when login is completet display the gifs
+
+when clicked on the image it should go to the another page where it asks to download what size of image

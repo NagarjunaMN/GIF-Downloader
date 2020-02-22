@@ -1,0 +1,39 @@
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-light">
+        {{#if user}}
+        <h5 class="text-center mt-5">Hello {{{userName.name}}} ...!!</h5>
+        {{/if}}
+  <div class="col-md-6 p-lg-5 mx-auto my-3 text-center" >
+    <h1 class="display-1 text-center  ">GIF Downloader</h1>
+    <p class="lead font-weight-normal pt-3 text-dark">Welcome to Gif Downloader.</p>
+        <p class="lead font-weight-normal text-dark pb-4">Here you can download the GIF of your choice and your Screen size.</p>
+
+        <form action="/gif" method="POST">
+            <div class="form-group">
+ 
+                <input type="text" class="form-control border-dark" id="search" name="search" placeholder="Search for GIF">
+            </div>
+            <button type="submit" class="btn btn-dark col-md-3">Submit</button>
+        </form>1
+  </div>
+  <div class="product-device shadow-sm d-none d-md-block"></div>
+  <div class="product-device product-device-2 shadow-sm d-none d-md-block"></div>
+</div>
+
+    <div class="myclass container-fluid">
+        {{#each gif}}
+          <a href="/gif/image/{{this.id}}/{{this.title}}"><img src="{{this.images.downsized_medium.url}}" alt=""></a>  
+        {{/each}}
+        {{#if err}}
+            <h3 class="text-center text-danger">{{data}}</h3>
+        {{/if}}
+    </div>
+
+    <div class="container-fluid text-right">
+        {{#if btn}}
+            <a href="/gif/next" class="btn btn-dark px-5" >Next</a> 
+        {{/if}}
+    </div>
+
+
+
